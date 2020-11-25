@@ -1,59 +1,68 @@
-import React from 'react';
+/* eslint-disable camelcase */
+import React, { useState, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 import Logo from '../../assets/logo.svg';
 import { Title, Form, Repositories } from './styles';
+import api from '../../services/api';
+import Repository from '../Repository';
+
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
 
 const Dashboard: React.FC = () => {
+  const [newRepo, setNewRepo] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+
+  async function handleAddRepository(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
+
+    const response = await api.get(`repos/${newRepo}`);
+
+    const repository = response.data;
+    setRepositories([...repositories, repository]);
+    setNewRepo('');
+    // Adição de novo repositório
+    // Consumir Api do github
+    // Salvar novo repositório no estado
+  }
   return (
     <>
       <img src={Logo} alt="Github Explorer" />
       <Title>Explore repositórios no Github</Title>
 
-      <Form>
-        <input placeholder="Digite aqui o repositório" />
+      <Form onSubmit={handleAddRepository}>
+        <input
+          value={newRepo}
+          onChange={(e) => setNewRepo(e.target.value)}
+          placeholder="Digite aqui o repositório"
+        />
         <button type="submit">Pesquisar</button>
       </Form>
 
       <Repositories>
-        <a href="teste">
-          <img
-            src="https://avatars0.githubusercontent.com/u/42475360?s=460&u=9437a673cc24dfd15f1ba6fb589f9eaff164bfef&v=4"
-            alt="Alexandre Castro"
-          />
+        {repositories.map((repository) => (
+          <a key={repository.full_name} href="teste">
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
 
-          <div>
-            <strong>rocketseat/React</strong>
-            <p>Aprendendo React com a rocket </p>
-          </div>
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>{repository.description}</p>
+            </div>
 
-          <FiChevronRight size={20} />
-        </a>
-        <a href="teste">
-          <img
-            src="https://scontent.fmcz3-1.fna.fbcdn.net/v/t1.0-9/108669578_2640639202860620_4206996946529179726_o.jpg?_nc_cat=104&ccb=2&_nc_sid=8bfeb9&_nc_ohc=HUl-BYzf1eQAX-OcNu5&_nc_ht=scontent.fmcz3-1.fna&oh=f20a9012fbada1847a1d17b95c42e36e&oe=5FE1C9D6"
-            alt="Alexandre Castro"
-          />
-
-          <div>
-            <strong>João Netto</strong>
-            <p>Peidero profissional </p>
-          </div>
-
-          <FiChevronRight size={20} />
-        </a>
-        <a href="teste">
-          <img
-            src="https://avatars0.githubusercontent.com/u/42475360?s=460&u=9437a673cc24dfd15f1ba6fb589f9eaff164bfef&v=4"
-            alt="Alexandre Castro"
-          />
-
-          <div>
-            <strong>TESTE</strong>
-            <p>Aprendendo React com a rocket </p>
-          </div>
-
-          <FiChevronRight size={20} />
-        </a>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
       </Repositories>
     </>
   );
